@@ -1,0 +1,26 @@
+[
+        {
+                "id": "1",
+                "title": "Clean Water Wells",
+                "description": "Provide sustainable clean water infrastructure for communities facing severe shortages.",
+                "category": "General Aid",
+                "goalAmount": 500000,
+                "image": "https://images.unsplash.com/photo-1594705353846-9d324b1a45ef?q=80&w=1200"
+        },
+        {
+                "id": "2",
+                "title": "Gaza Relief Fund",
+                "description": "Emergency food, medical supplies, and shelter for affected families in Gaza.",
+                "category": "Emergency",
+                "goalAmount": 2000000,
+                "image": "https://images.unsplash.com/photo-1542810634-71277d95dcbb?q=80&w=1200"
+        },
+        {
+                "id": "3",
+                "title": "Orphan Sponsorship",
+                "description": "Support education and daily needs for orphaned children year-round.",
+                "category": "Zakat",
+                "goalAmount": 150000,
+                "image": "https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=1200"
+        }
+]
