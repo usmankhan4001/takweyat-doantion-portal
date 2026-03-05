@@ -116,7 +116,7 @@ function DonationWizard() {
 
       <header style={{ padding: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '1200px', margin: '0 auto', zIndex: 10 }}>
         <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '0.6rem', letterSpacing: '-0.03em' }}>
-          <div style={{ width: '28px', height: '28px', background: 'var(--secondary)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '14px' }}>T</div>
+          <img src="/logo.png" alt="Takweyat Foundation" style={{ height: '36px', width: '36px', objectFit: 'contain' }} />
           TAKWEYAT
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
