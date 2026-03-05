@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,30 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Ensure uploads directory exists
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+// Serve uploaded files as static assets
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+// Multer config — store uploaded files in /uploads
+const storage = multer.diskStorage({
+        destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+        filename: (_req, file, cb) => {
+                const ext = path.extname(file.originalname);
+                cb(null, `${Date.now()}${ext}`);
+        }
+});
+const upload = multer({
+        storage,
+        limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
+        fileFilter: (_req, file, cb) => {
+                if (file.mimetype.startsWith('image/')) cb(null, true);
+                else cb(new Error('Only image files are allowed'));
+        }
+});
 
 const DB_FILE = path.join(__dirname, 'causes.json');
 
@@ -25,10 +50,6 @@ const saveCauses = (data) => {
         fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 };
 
-app.get('/api/causes', (req, res) => {
-        res.json(getCauses());
-});
-
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "takweyat_admin";
 
 const authenticate = (req, res, next) => {
@@ -39,6 +60,17 @@ const authenticate = (req, res, next) => {
                 res.status(401).json({ error: "Unauthorized" });
         }
 };
+
+// Upload image endpoint
+app.post('/api/upload', authenticate, upload.single('image'), (req, res) => {
+        if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+        const imageUrl = `/uploads/${req.file.filename}`;
+        res.json({ url: imageUrl });
+});
+
+app.get('/api/causes', (req, res) => {
+        res.json(getCauses());
+});
 
 app.post('/api/causes', authenticate, (req, res) => {
         const causes = getCauses();
@@ -74,7 +106,6 @@ app.delete('/api/causes/:id', authenticate, (req, res) => {
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
         app.use(express.static(distPath));
-        // SPA fallback — serve index.html for all non-API routes
         app.get('*', (req, res) => {
                 res.sendFile(path.join(distPath, 'index.html'));
         });

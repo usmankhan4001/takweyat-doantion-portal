@@ -413,6 +413,10 @@ function AdminDashboard() {
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newGoal, setNewGoal] = useState('');
+  const [newCategory, setNewCategory] = useState('General');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchCauses = () => {
     fetch(`${API_URL}/causes`).then(res => res.json()).then(data => setCauses(data));
@@ -428,15 +432,48 @@ function AdminDashboard() {
     if (res.ok) fetchCauses(); else alert("Unauthorized! Wrong password.");
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
   const handleAdd = async (e) => {
     e.preventDefault();
+    setUploading(true);
+    let imageUrl = null;
+
+    // Upload image first if one was selected
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      const uploadRes = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${password}` },
+        body: formData
+      });
+      if (uploadRes.ok) {
+        const { url } = await uploadRes.json();
+        imageUrl = url;
+      } else {
+        alert('Image upload failed. Check your password and try again.');
+        setUploading(false);
+        return;
+      }
+    }
+
     const res = await fetch(`${API_URL}/causes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${password}` },
-      body: JSON.stringify({ title: newTitle, description: newDesc, category: 'General', goalAmount: newGoal ? Number(newGoal) : undefined })
+      body: JSON.stringify({ title: newTitle, description: newDesc, category: newCategory, goalAmount: newGoal ? Number(newGoal) : undefined, image: imageUrl })
     });
-    if (res.ok) { setNewTitle(''); setNewDesc(''); setNewGoal(''); fetchCauses(); }
-    else alert("Unauthorized! Wrong password.");
+    setUploading(false);
+    if (res.ok) {
+      setNewTitle(''); setNewDesc(''); setNewGoal(''); setNewCategory('General');
+      setImageFile(null); setImagePreview(null);
+      fetchCauses();
+    } else alert("Unauthorized! Wrong password.");
   };
 
   if (!authenticated) {
@@ -463,8 +500,33 @@ function AdminDashboard() {
         <form onSubmit={handleAdd} style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
           <input required type="text" style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '1rem', flex: 1, minWidth: '200px' }} placeholder="Title" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
           <input required type="text" style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '1rem', flex: 2, minWidth: '300px' }} placeholder="Description" value={newDesc} onChange={e => setNewDesc(e.target.value)} />
+          <select style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '1rem', flex: 1, minWidth: '140px', background: 'white', cursor: 'pointer' }} value={newCategory} onChange={e => setNewCategory(e.target.value)}>
+            <option>General</option>
+            <option>Emergency</option>
+            <option>Zakat</option>
+            <option>Sadaqah</option>
+          </select>
           <input type="number" style={{ padding: '1rem', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '1rem', flex: 1, minWidth: '160px' }} placeholder="Target Goal (Rs)" value={newGoal} onChange={e => setNewGoal(e.target.value)} />
-          <button type="submit" className="btn btn-primary" style={{ padding: '1rem 2rem' }}>Publish Cause</button>
+
+          <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '0.9rem 1.5rem', border: '2px dashed var(--border)', borderRadius: '12px', background: imagePreview ? 'rgba(51,138,149,0.05)' : 'transparent', flex: 1, minWidth: '220px' }}>
+              <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
+              <span style={{ fontSize: '1.5rem' }}>{imagePreview ? '🖼️' : '📷'}</span>
+              <span style={{ fontSize: '0.95rem', color: imagePreview ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 600 }}>
+                {imageFile ? imageFile.name : 'Upload Cause Background Image'}
+              </span>
+            </label>
+            {imagePreview && (
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <img src={imagePreview} alt="Preview" style={{ width: '100px', height: '70px', objectFit: 'cover', borderRadius: '10px', border: '2px solid var(--primary)' }} />
+                <button type="button" onClick={() => { setImageFile(null); setImagePreview(null); }} style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '22px', height: '22px', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+              </div>
+            )}
+          </div>
+
+          <button type="submit" className="btn btn-primary" style={{ padding: '1rem 2rem', width: '100%', marginTop: '0.5rem' }} disabled={uploading}>
+            {uploading ? 'Uploading...' : 'Publish Cause'}
+          </button>
         </form>
       </div>
 
@@ -472,6 +534,7 @@ function AdminDashboard() {
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ background: 'rgba(0,0,0,0.02)', borderBottom: '1px solid var(--border)' }}>
+              <th style={{ padding: '1.5rem', fontWeight: 600, color: 'var(--text-muted)', width: '80px' }}>Image</th>
               <th style={{ padding: '1.5rem', fontWeight: 600, color: 'var(--text-muted)' }}>Title</th>
               <th style={{ padding: '1.5rem', fontWeight: 600, color: 'var(--text-muted)' }}>Description</th>
               <th style={{ padding: '1.5rem', fontWeight: 600, color: 'var(--text-muted)' }}>Goal Amount</th>
@@ -481,6 +544,12 @@ function AdminDashboard() {
           <tbody>
             {causes.map(c => (
               <tr key={c.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <td style={{ padding: '1rem 1.5rem' }}>
+                  {c.image
+                    ? <img src={c.image} alt={c.title} style={{ width: '60px', height: '42px', objectFit: 'cover', borderRadius: '8px', display: 'block' }} />
+                    : <div style={{ width: '60px', height: '42px', background: 'rgba(0,0,0,0.05)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>🖼️</div>
+                  }
+                </td>
                 <td style={{ padding: '1.5rem', fontWeight: 700, color: 'var(--secondary)' }}>{c.title}</td>
                 <td style={{ padding: '1.5rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>{c.description}</td>
                 <td style={{ padding: '1.5rem', fontWeight: 700 }}>{c.goalAmount ? `Rs ${c.goalAmount.toLocaleString()}` : '-'}</td>
@@ -491,7 +560,7 @@ function AdminDashboard() {
             ))}
             {causes.length === 0 && (
               <tr>
-                <td colSpan="4" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '1.2rem' }}>No causes found. Add one above to get started.</td>
+                <td colSpan="5" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '1.2rem' }}>No causes found. Add one above to get started.</td>
               </tr>
             )}
           </tbody>
