@@ -3,11 +3,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and install ALL deps (including devDependencies for build)
 COPY package*.json ./
 RUN npm ci
 
-# Copy source and build the React app
 COPY . .
 RUN npm run build
 
@@ -24,6 +22,9 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY server.js ./
 COPY causes.json ./
+
+# Create uploads directory (for cause images)
+RUN mkdir -p /app/uploads
 
 EXPOSE 3000
 
