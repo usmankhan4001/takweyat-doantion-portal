@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -29,7 +29,7 @@ app.get('/api/causes', (req, res) => {
         res.json(getCauses());
 });
 
-const ADMIN_PASSWORD = "takweyat_admin";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "takweyat_admin";
 
 const authenticate = (req, res, next) => {
         const authHeader = req.headers.authorization;
@@ -70,6 +70,16 @@ app.delete('/api/causes/:id', authenticate, (req, res) => {
         res.json({ success: true });
 });
 
+// Serve built React frontend in production
+const distPath = path.join(__dirname, 'dist');
+if (fs.existsSync(distPath)) {
+        app.use(express.static(distPath));
+        // SPA fallback — serve index.html for all non-API routes
+        app.get('*', (req, res) => {
+                res.sendFile(path.join(distPath, 'index.html'));
+        });
+}
+
 app.listen(PORT, () => {
-        console.log(`Backend server running on http://localhost:${PORT}`);
+        console.log(`Server running on port ${PORT}`);
 });
