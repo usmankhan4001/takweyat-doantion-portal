@@ -21,7 +21,7 @@ if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 // Serve uploaded files as static assets
 app.use('/uploads', express.static(UPLOADS_DIR));
 
-// Multer config — store uploaded files in /uploads
+// Multer config
 const storage = multer.diskStorage({
         destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
         filename: (_req, file, cb) => {
@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
         storage,
-        limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
+        limits: { fileSize: 10 * 1024 * 1024 },
         fileFilter: (_req, file, cb) => {
                 if (file.mimetype.startsWith('image/')) cb(null, true);
                 else cb(new Error('Only image files are allowed'));
@@ -50,22 +50,21 @@ const saveCauses = (data) => {
         fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 };
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "takweyat_admin";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'takweyat_admin';
 
 const authenticate = (req, res, next) => {
         const authHeader = req.headers.authorization;
         if (authHeader === `Bearer ${ADMIN_PASSWORD}`) {
                 next();
         } else {
-                res.status(401).json({ error: "Unauthorized" });
+                res.status(401).json({ error: 'Unauthorized' });
         }
 };
 
 // Upload image endpoint
 app.post('/api/upload', authenticate, upload.single('image'), (req, res) => {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-        const imageUrl = `/uploads/${req.file.filename}`;
-        res.json({ url: imageUrl });
+        res.json({ url: `/uploads/${req.file.filename}` });
 });
 
 app.get('/api/causes', (req, res) => {
@@ -74,10 +73,7 @@ app.get('/api/causes', (req, res) => {
 
 app.post('/api/causes', authenticate, (req, res) => {
         const causes = getCauses();
-        const newCause = {
-                id: Date.now().toString(),
-                ...req.body
-        };
+        const newCause = { id: Date.now().toString(), ...req.body };
         causes.push(newCause);
         saveCauses(causes);
         res.status(201).json(newCause);
@@ -91,7 +87,7 @@ app.put('/api/causes/:id', authenticate, (req, res) => {
                 saveCauses(causes);
                 res.json(causes[index]);
         } else {
-                res.status(404).json({ error: "Not found" });
+                res.status(404).json({ error: 'Not found' });
         }
 });
 
@@ -106,7 +102,8 @@ app.delete('/api/causes/:id', authenticate, (req, res) => {
 const distPath = path.join(__dirname, 'dist');
 if (fs.existsSync(distPath)) {
         app.use(express.static(distPath));
-        app.get('*', (req, res) => {
+        // Express v5 requires named wildcard — 'app.get("*")' crashes on startup
+        app.get('/{*path}', (req, res) => {
                 res.sendFile(path.join(distPath, 'index.html'));
         });
 }
