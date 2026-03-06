@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import html2canvas from 'html2canvas';
+import Guidelines from './components/Guidelines';
 
 const API_URL = '/api';
 
@@ -28,6 +29,7 @@ function DonationWizard() {
   const [countryCode, setCountryCode] = useState('+92');
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [selectedCause, setSelectedCause] = useState('general'); // default
+  const [showCauseDetails, setShowCauseDetails] = useState(false);
 
   // Data State
   const [causes, setCauses] = useState([]);
@@ -155,7 +157,10 @@ function DonationWizard() {
                     <div
                       key={c.id}
                       className={`cause-card${selectedCause === c.id ? ' selected' : ''}`}
-                      onClick={() => setSelectedCause(c.id)}
+                      onClick={() => {
+                        setSelectedCause(c.id);
+                        setShowCauseDetails(true);
+                      }}
                     >
                       {c.image && <div className="cause-card-bg" style={{ backgroundImage: `url(${c.image})` }} />}
                       <div className="cause-card-overlay" />
@@ -171,6 +176,28 @@ function DonationWizard() {
                   )}
                 </div>
               </div>
+
+              {/* Cause Details Panel */}
+              {showCauseDetails && causes.length > 0 && selectedCause && (() => {
+                const causeObj = causes.find(c => c.id === selectedCause) || causes[0];
+                return (
+                  <div className="cause-details-collapse fade-in-up">
+                    <button type="button" className="close-details-btn" onClick={() => setShowCauseDetails(false)}>
+                      ✕
+                    </button>
+                    <div className="cause-details-content">
+                      <h4 className="cause-details-title">{causeObj.title}</h4>
+                      <p className="cause-details-desc">{causeObj.description}</p>
+                      {causeObj.goalAmount && (
+                        <div className="cause-details-goal">
+                          <span className="goal-label">Funds Needed</span>
+                          <span className="goal-amount">Rs {causeObj.goalAmount.toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* 3. YOUR DETAILS */}
               <div className="form-section-title">
@@ -202,6 +229,11 @@ function DonationWizard() {
                   </button>
                   <input className="field-input" type="tel" placeholder="3XX XXXXXXX" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} style={{ flex: 1 }} required autoComplete="tel" />
                 </div>
+              </div>
+
+              {/* GUIDELINES RE-INTEGRATION */}
+              <div style={{ marginTop: '2rem' }}>
+                <Guidelines />
               </div>
 
             </div>
