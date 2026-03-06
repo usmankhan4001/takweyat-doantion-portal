@@ -360,8 +360,7 @@ function AdminDashboard() {
   const [newDesc, setNewDesc] = useState('');
   const [newGoal, setNewGoal] = useState('');
   const [newCategory, setNewCategory] = useState('General');
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imageUrl, setImageUrl] = useState('');
   const [uploading, setUploading] = useState(false);
 
   const fetchCauses = () => fetch(`${API_URL}/causes`).then(r => r.json()).then(setCauses);
@@ -375,32 +374,54 @@ function AdminDashboard() {
     if (res.ok) fetchCauses(); else alert('Unauthorized.');
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-  };
-
   const handleAdd = async (e) => {
     e.preventDefault();
     setUploading(true);
-    let imageUrl = null;
-    if (imageFile) {
-      const fd = new FormData();
-      fd.append('image', imageFile);
-      const r = await fetch(`${API_URL}/upload`, { method: 'POST', headers: { Authorization: `Bearer ${password}` }, body: fd });
-      if (r.ok) { const { url } = await r.json(); imageUrl = url; }
-      else { alert('Image upload failed.'); setUploading(false); return; }
-    }
     const res = await fetch(`${API_URL}/causes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
       body: JSON.stringify({ title: newTitle, description: newDesc, category: newCategory, goalAmount: newGoal ? Number(newGoal) : undefined, image: imageUrl })
     });
     setUploading(false);
-    if (res.ok) { setNewTitle(''); setNewDesc(''); setNewGoal(''); setNewCategory('General'); setImageFile(null); setImagePreview(null); fetchCauses(); }
+    if (res.ok) { setNewTitle(''); setNewDesc(''); setNewGoal(''); setNewCategory('General'); setImageUrl(''); fetchCauses(); }
     else alert('Unauthorized.');
+  };
+
+  const handleCsvImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onload = async ({ target }) => {
+      const text = target.result;
+      const lines = text.split(/\r?\n/).filter(line => line.trim());
+      let successCount = 0;
+      for (let i = 1; i < lines.length; i++) {
+        let cols = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let c of lines[i]) {
+          if (c === '"') inQuotes = !inQuotes;
+          else if (c === ',' && !inQuotes) { cols.push(cur.trim()); cur = ''; }
+          else cur += c;
+        }
+        cols.push(cur.trim());
+        const [title, description, category, goalAmountStr, image] = cols;
+        if (!title) continue;
+        const goalAmount = goalAmountStr ? Number(goalAmountStr) : undefined;
+        const res = await fetch(`${API_URL}/causes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${password}` },
+          body: JSON.stringify({ title, description, category: category || 'General', goalAmount, image })
+        });
+        if (res.ok) successCount++;
+      }
+      setUploading(false);
+      alert(`Imported ${successCount} causes successfully.`);
+      fetchCauses();
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   if (!authenticated) {
@@ -438,22 +459,24 @@ function AdminDashboard() {
           <input type="number" className="field-input" placeholder="Goal Amount (Rs)" value={newGoal} onChange={e => setNewGoal(e.target.value)} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', padding: '1rem', border: '2px dashed var(--border)', borderRadius: 'var(--r-md)', flex: 1, minWidth: '200px', background: imagePreview ? 'rgba(51,138,149,0.04)' : 'transparent', transition: 'all 0.2s ease' }}>
-              <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
-              <span style={{ fontSize: '1.5rem' }}>{imagePreview ? '🖼️' : '📸'}</span>
-              <span style={{ fontSize: '0.95rem', color: imagePreview ? 'var(--primary)' : 'var(--muted)', fontWeight: 700 }}>{imageFile ? imageFile.name : 'Upload Background Image'}</span>
-            </label>
-            {imagePreview && (
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <img src={imagePreview} alt="" style={{ width: '90px', height: '64px', objectFit: 'cover', borderRadius: '12px', border: '3px solid var(--primary)', display: 'block', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                <button type="button" onClick={() => { setImageFile(null); setImagePreview(null); }} style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)' }}>✕</button>
-              </div>
+            <input type="url" className="field-input" placeholder="Image URL (e.g. https://example.com/img.jpg)" value={imageUrl} onChange={e => setImageUrl(e.target.value)} style={{ flex: 1, minWidth: '200px' }} />
+            {imageUrl && (
+              <img src={imageUrl} alt="Preview" style={{ width: '64px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border)', display: 'block' }} onError={(e) => { e.target.style.display = 'none'; }} onLoad={(e) => { e.target.style.display = 'block'; }} />
             )}
           </div>
 
-          <button type="submit" className="btn btn-primary" disabled={uploading} style={{ marginTop: '1rem', width: '100%' }}>
-            {uploading ? 'Uploading…' : 'Publish Cause ✨'}
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', width: '100%' }}>
+            <button type="submit" className="btn btn-primary" disabled={uploading} style={{ flex: 2 }}>
+              {uploading ? 'Processing…' : 'Publish Cause ✨'}
+            </button>
+            <label className="btn btn-secondary" style={{ flex: 1, cursor: 'pointer', textAlign: 'center' }}>
+              <input type="file" accept=".csv" onChange={handleCsvImport} style={{ display: 'none' }} disabled={uploading} />
+              {uploading ? 'Importing…' : '📄 Import CSV'}
+            </label>
+            <a href="/causes_example.csv" target="_blank" download className="btn btn-secondary" style={{ padding: '0 1rem', flex: 0, title: 'Download Template', minWidth: '60px' }}>
+              ⬇
+            </a>
+          </div>
         </form>
       </div>
 
