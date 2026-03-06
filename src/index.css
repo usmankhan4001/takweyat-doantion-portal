@@ -670,7 +670,7 @@ main.wizard-main {
   font-weight: 700;
   font-size: 1.05rem;
   color: var(--secondary);
-  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-family: inherit;
 }
 
 .copy-icon {
