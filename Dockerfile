@@ -21,7 +21,10 @@ RUN npm ci --omit=dev
 # Copy built frontend and server files
 COPY --from=builder /app/dist ./dist
 COPY server.js ./
-COPY causes.json ./
+
+# NOTE: causes.json is NOT baked into the image.
+# Mount it as a persistent volume in your container orchestrator at /app/causes.json
+# so it survives redeployments. On first run the server will start with an empty list.
 
 # Create uploads directory (for cause images)
 RUN mkdir -p /app/uploads

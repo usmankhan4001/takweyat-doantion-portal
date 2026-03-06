@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import Guidelines from './components/Guidelines';
+import { Check, Copy, Info, X, Camera, ImageIcon, Download, Sparkles, ChevronDown, FileText, Heart } from 'lucide-react';
 
 const API_URL = '/api';
 
@@ -13,7 +14,7 @@ const CopyField = ({ label, value, rawValue, onCopy, copiedAcc }) => (
       <p className="copy-value">{value}</p>
     </div>
     <div className={`copy-icon${copiedAcc === rawValue ? ' copied' : ''}`}>
-      {copiedAcc === rawValue ? '✓' : '⧉'}
+      {copiedAcc === rawValue ? <Check size={16} strokeWidth={3} /> : <Copy size={16} />}
     </div>
   </div>
 );
@@ -130,7 +131,7 @@ function DonationWizard() {
             className="info-btn"
             title="Donation Guidelines"
           >
-            ℹ️
+            <Info size={18} />
           </button>
         </div>
       </header>
@@ -194,7 +195,7 @@ function DonationWizard() {
                 return (
                   <div className="cause-details-collapse fade-in-up">
                     <button type="button" className="close-details-btn" onClick={() => setShowCauseDetails(false)}>
-                      ✕
+                      <X size={16} />
                     </button>
                     <div className="cause-details-content">
                       <h4 className="cause-details-title">{causeObj.title}</h4>
@@ -226,7 +227,7 @@ function DonationWizard() {
                     className="phone-country-btn"
                     onClick={() => setShowCountryDropdown(v => !v)}
                   >
-                    {countryCode} <span style={{ opacity: 0.5, fontSize: '0.7rem' }}>▾</span>
+                    {countryCode} <ChevronDown size={12} style={{ opacity: 0.5 }} />
                     {showCountryDropdown && (
                       <div className="country-dropdown">
                         {countries.map(c => (
@@ -306,7 +307,9 @@ function DonationWizard() {
               </div>
               <label className={`upload-zone${receiptFile ? ' has-file' : ''}`}>
                 <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
-                <span className="upload-icon">{receiptFile ? '✅' : '📸'}</span>
+                <span className="upload-icon">
+                  {receiptFile ? <Check size={40} strokeWidth={2.5} color="var(--success)" /> : <Camera size={40} strokeWidth={1.5} color="var(--muted)" />}
+                </span>
                 <p className="upload-title">{receiptFile ? receiptFile.name : 'Tap to upload screenshot'}</p>
                 <p className="upload-subtitle">{receiptFile ? 'Tap to change image' : 'Supports JPG, PNG'}</p>
               </label>
@@ -317,7 +320,7 @@ function DonationWizard() {
 
         {step === 3 && (
           <div className="wizard-step fade-in-up" style={{ textAlign: 'center', alignItems: 'center' }}>
-            <span className="success-icon">🤲</span>
+            <span className="success-icon"><Heart size={48} strokeWidth={1.5} color="var(--primary)" fill="rgba(5,150,105,0.15)" /></span>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '0.25rem' }}>JazakAllah Khair!</h1>
             <p style={{ color: 'var(--muted)', fontSize: '1.05rem', fontWeight: 500, fontStyle: 'italic', marginBottom: '1rem' }}>
               "May Allah accept it and bestow you with the best. Ameen."
@@ -354,7 +357,7 @@ function DonationWizard() {
 
             <div style={{ display: 'flex', gap: '1rem', width: '100%', marginTop: '0.5rem' }}>
               <button type="button" onClick={handleDownloadReceipt} className="btn btn-secondary" style={{ flex: 1 }}>
-                ⬇ Save
+                <Download size={18} /> Save
               </button>
               <button type="button" onClick={() => window.location.reload()} className="btn btn-primary" style={{ flex: 2 }}>
                 Done
@@ -380,7 +383,7 @@ function DonationWizard() {
               disabled={step === 2 && !receiptFile}
               style={{ flex: 1 }}
             >
-              {step === 1 ? 'Continue' : 'Submit Donation ✨'}
+              {step === 1 ? 'Continue' : <><Sparkles size={18} /> Submit Donation</>}
             </button>
           </div>
         </div>
@@ -390,7 +393,7 @@ function DonationWizard() {
       {showGuidelinesModal && (
         <div className="modal-overlay" onClick={() => setShowGuidelinesModal(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={() => setShowGuidelinesModal(false)}>✕</button>
+            <button className="close-modal-btn" onClick={() => setShowGuidelinesModal(false)}><X size={18} /></button>
             <Guidelines />
           </div>
         </div>
@@ -515,14 +518,14 @@ function AdminDashboard() {
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', width: '100%' }}>
             <button type="submit" className="btn btn-primary" disabled={uploading} style={{ flex: 2 }}>
-              {uploading ? 'Processing…' : 'Publish Cause ✨'}
+              {uploading ? 'Processing…' : <><Sparkles size={16} /> Publish Cause</>}
             </button>
             <label className="btn btn-secondary" style={{ flex: 1, cursor: 'pointer', textAlign: 'center' }}>
               <input type="file" accept=".csv" onChange={handleCsvImport} style={{ display: 'none' }} disabled={uploading} />
-              {uploading ? 'Importing…' : '📄 Import CSV'}
+              {uploading ? 'Importing…' : <><FileText size={16} /> Import CSV</>}
             </label>
             <a href="/causes_example.csv" target="_blank" download className="btn btn-secondary" style={{ padding: '0 1rem', flex: 0, title: 'Download Template', minWidth: '60px' }}>
-              ⬇
+              <Download size={18} />
             </a>
           </div>
         </form>
@@ -544,7 +547,7 @@ function AdminDashboard() {
                 <td style={{ padding: '1rem' }}>
                   {c.image
                     ? <img src={c.image} alt="" style={{ width: '64px', height: '48px', objectFit: 'cover', borderRadius: '8px', display: 'block', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />
-                    : <div style={{ width: '64px', height: '48px', background: 'var(--bg)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)' }}>🖼️</div>}
+                    : <div style={{ width: '64px', height: '48px', background: 'var(--bg)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)' }}><ImageIcon size={24} color="var(--muted)" /></div>}
                 </td>
                 <td style={{ padding: '1rem', fontWeight: 800, color: 'var(--secondary)', fontSize: '1.05rem' }}>{c.title}</td>
                 <td style={{ padding: '1rem', color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.5, maxWidth: '260px' }}>{c.description}</td>
