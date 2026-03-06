@@ -22,13 +22,15 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 COPY server.js ./
 
-# NOTE: causes.json is NOT baked into the image.
-# Mount it as a persistent volume in your container orchestrator at /app/causes.json
-# so it survives redeployments. On first run the server will start with an empty list.
+# Copy causes.json as a seed file
+COPY causes.json /app/causes.seed.json
+
+# Startup script: seed causes.json on first run if the volume file doesn't exist
+RUN printf '#!/bin/sh\n[ ! -f /app/causes.json ] && cp /app/causes.seed.json /app/causes.json\nexec node server.js\n' > /app/start.sh && chmod +x /app/start.sh
 
 # Create uploads directory (for cause images)
 RUN mkdir -p /app/uploads
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["/app/start.sh"]

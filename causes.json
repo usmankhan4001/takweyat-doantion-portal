@@ -1,26 +1,26 @@
 [
         {
                 "id": "1",
-                "title": "Clean Water Wells",
-                "description": "Provide sustainable clean water infrastructure for communities facing severe shortages.",
-                "category": "General Aid",
-                "goalAmount": 500000,
-                "image": "https://images.unsplash.com/photo-1594705353846-9d324b1a45ef?q=80&w=1200"
+                "title": "Gaza School Project",
+                "description": "Constructing a school in Gaza to provide long-term recovery and education for displaced children.",
+                "category": "Emergency / Education",
+                "goalAmount": 4500000,
+                "image": "https://images.premierchoiceint.online/images/2026/03/07/8c27ffa3c86516b75e7f3c84c74b311d.jpg"
         },
         {
                 "id": "2",
-                "title": "Gaza Relief Fund",
-                "description": "Emergency food, medical supplies, and shelter for affected families in Gaza.",
+                "title": "Sudan Emergency Relief",
+                "description": "Delivering urgent food and essential aid to displaced families in Sudan.",
                 "category": "Emergency",
-                "goalAmount": 2000000,
-                "image": "https://images.unsplash.com/photo-1542810634-71277d95dcbb?q=80&w=1200"
+                "goalAmount": 500000,
+                "image": "https://images.premierchoiceint.online/images/2026/03/07/809495f831914553b1a6d4dbb579d0ff.jpg"
         },
         {
                 "id": "3",
-                "title": "Orphan Sponsorship",
-                "description": "Support education and daily needs for orphaned children year-round.",
-                "category": "Zakat",
-                "goalAmount": 150000,
-                "image": "https://images.unsplash.com/photo-1511895426328-dc8714191300?q=80&w=1200"
+                "title": "Daily Iftar Program",
+                "description": "Providing 45,000 meals to families in need during Ramadan in Pakistan.",
+                "category": "Zakat / Food",
+                "goalAmount": 700000,
+                "image": "https://images.premierchoiceint.online/images/2026/03/07/WhatsApp-Image-2026-03-06-at-7.51.26-PM.jpeg"
         }
 ]
