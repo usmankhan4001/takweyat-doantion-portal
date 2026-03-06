@@ -30,6 +30,7 @@ function DonationWizard() {
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [selectedCause, setSelectedCause] = useState('general'); // default
   const [showCauseDetails, setShowCauseDetails] = useState(false);
+  const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
 
   // Data State
   const [causes, setCauses] = useState([]);
@@ -117,11 +118,21 @@ function DonationWizard() {
         <div className="app-header-logo">
           <img src="/logo_new.png" alt="Takweyat" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
         </div>
-        {step < 3 && (
-          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.05em' }}>
-            STEP {step} OF 2
-          </span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {step < 3 && (
+            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.05em' }}>
+              STEP {step} OF 2
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowGuidelinesModal(true)}
+            className="info-btn"
+            title="Donation Guidelines"
+          >
+            ℹ️
+          </button>
+        </div>
       </header>
 
       {/* Main Content Area */}
@@ -229,11 +240,6 @@ function DonationWizard() {
                   </button>
                   <input className="field-input" type="tel" placeholder="3XX XXXXXXX" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} style={{ flex: 1 }} required autoComplete="tel" />
                 </div>
-              </div>
-
-              {/* GUIDELINES RE-INTEGRATION */}
-              <div style={{ marginTop: '2rem' }}>
-                <Guidelines />
               </div>
 
             </div>
@@ -376,6 +382,16 @@ function DonationWizard() {
             >
               {step === 1 ? 'Continue' : 'Submit Donation ✨'}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Guidelines Modal Overlay */}
+      {showGuidelinesModal && (
+        <div className="modal-overlay" onClick={() => setShowGuidelinesModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="close-modal-btn" onClick={() => setShowGuidelinesModal(false)}>✕</button>
+            <Guidelines />
           </div>
         </div>
       )}
