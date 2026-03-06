@@ -91,11 +91,13 @@ function DonationWizard() {
   const handleDownloadReceipt = () => {
     const el = document.getElementById('receipt-container');
     if (!el) return;
-    html2canvas(el, { scale: 3, backgroundColor: null }).then(canvas => {
-      const link = document.createElement('a');
-      link.download = `Takweyat_Receipt_${name.replace(/\s+/g, '_')}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+    document.fonts.ready.then(() => {
+      html2canvas(el, { scale: 3, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Takweyat_Receipt_${name.replace(/\s+/g, '_')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
     });
   };
 
