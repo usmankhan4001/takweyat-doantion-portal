@@ -111,8 +111,7 @@ function DonationWizard() {
       {/* Header */}
       <header className="app-header">
         <div className="app-header-logo">
-          <img src="/logo.png" alt="Takweyat" />
-          TAKWEYAT
+          <img src="/logo_new.png" alt="Takweyat" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
         </div>
         {step < 3 && (
           <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.05em' }}>
@@ -291,9 +290,7 @@ function DonationWizard() {
                   <div className="receipt-label-tag">Donation Receipt</div>
                 </div>
                 {/* Visual Stamp */}
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', border: '4px solid var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--success)', fontSize: '1.25rem' }}>
-                  ✓
-                </div>
+                <img src="/stamp.png" alt="Official Stamp" style={{ width: '64px', height: '64px', objectFit: 'contain', zIndex: 10, position: 'relative' }} />
               </div>
 
               <div className="receipt-row">
@@ -409,7 +406,7 @@ function AdminDashboard() {
       <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: '1.5rem' }}>
         <form style={{ background: 'white', borderRadius: 'var(--r-lg)', padding: '2.5rem 2rem', width: '100%', maxWidth: '400px', boxShadow: 'var(--shadow-md)' }} onSubmit={handleLogin}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', fontWeight: 800, fontSize: '1.25rem', marginBottom: '2rem', color: 'var(--secondary)' }}>
-            <img src="/logo.png" alt="" style={{ width: 36, height: 36 }} /> TAKWEYAT Admin
+            <img src="/logo_new.png" alt="" style={{ height: '36px', width: 'auto' }} /> Admin
           </div>
           <input type="password" className="field-input" placeholder="Master Password" value={password} onChange={e => setPassword(e.target.value)} style={{ marginBottom: '1.5rem', width: '100%' }} />
           <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Secure Login</button>
